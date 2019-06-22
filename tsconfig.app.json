@@ -2,7 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [],
+    "paths": {
+      "mat-lazy-list": [
+        "./projects/mat-lazy-list/src/public-api.ts"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"

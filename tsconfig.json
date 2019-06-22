@@ -8,6 +8,7 @@
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "strict": true,
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
@@ -18,6 +19,11 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "mat-lazy-list": [
+        "./projects/mat-lazy-list/src/public-api.ts"
+      ]
+    }
   }
 }

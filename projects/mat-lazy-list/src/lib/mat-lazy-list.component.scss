@@ -1,0 +1,18 @@
+.example-viewport{
+  height: 100vh;
+  margin-left: 50px;
+  border: 1px solid saddlebrown;
+}
+
+.top {
+  position: fixed;
+  bottom: 10px;
+  right: 15px;
+  font-size: 14px;
+  z-index: 10;
+  background-color: rgba(0,0,0,.5);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  opacity: 1;
+}

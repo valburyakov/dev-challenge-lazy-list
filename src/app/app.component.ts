@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'challenge-final';
+  items = Array.from({length: 100}).map((_, i) => `Item #${i}`);
 }

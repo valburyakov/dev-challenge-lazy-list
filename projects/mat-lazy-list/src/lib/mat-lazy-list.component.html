@@ -1,0 +1,11 @@
+
+<cdk-virtual-scroll-viewport class="example-viewport" [itemSize]="itemSize" minBufferPx="0" maxBufferPx="0">
+  <div *cdkVirtualFor="let card of cardsList">
+    <ng-container [ngTemplateOutlet]="card.tmpl"></ng-container>
+  </div>
+</cdk-virtual-scroll-viewport>
+
+
+<div class="top" *ngIf="hasOffsetToScroll">
+  <ng-content select="button"></ng-content>
+</div>
