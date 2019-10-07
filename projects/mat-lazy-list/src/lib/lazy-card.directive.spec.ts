@@ -1,8 +1,8 @@
-import { CardTemplateDirective } from './card-template.directive';
+import { LazyCardDirective } from './lazy-card.directive';
 
 describe('CardTemplateDirective', () => {
   it('should create an instance', () => {
-    const directive = new CardTemplateDirective();
+    const directive = new LazyCardDirective();
     expect(directive).toBeTruthy();
   });
 });

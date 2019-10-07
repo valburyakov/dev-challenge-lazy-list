@@ -1,7 +1,5 @@
-.example-viewport{
-  height: 100vh;
-  margin-left: 50px;
-  border: 1px solid saddlebrown;
+:host {
+  display: block;
 }
 
 .top {
@@ -15,4 +13,8 @@
   padding: 8px 12px;
   border-radius: 4px;
   opacity: 1;
+}
+
+.card-list {
+  overflow-y: scroll;
 }

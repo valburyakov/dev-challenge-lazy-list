@@ -3,49 +3,89 @@ import {
   Component,
   ContentChild,
   ContentChildren,
-  ElementRef,
-  Input,
+  ElementRef, OnDestroy,
   OnInit,
-  QueryList,
+  QueryList, Renderer2,
   ViewChild
 } from '@angular/core';
-import { CardTemplateDirective } from './card-template.directive';
-import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { LazyCardDirective } from './lazy-card.directive';
+import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
 
 @Component({
   selector: 'lib-mat-lazy-list',
   templateUrl: './mat-lazy-list.component.html',
   styleUrls: ['./mat-lazy-list.component.scss']
 })
-export class MatLazyListComponent implements OnInit, AfterContentInit {
+export class MatLazyListComponent implements OnInit, AfterContentInit, OnDestroy {
 
-  @Input() itemSize!: number;
-
-  @ViewChild(CdkVirtualScrollViewport, {static: true}) viewport!: CdkVirtualScrollViewport;
-
-  @ContentChildren(CardTemplateDirective) cards!: QueryList<CardTemplateDirective>;
+  @ContentChildren(LazyCardDirective) cards!: QueryList<LazyCardDirective>;
 
   @ContentChild('matCardLazyListScrollUp', {read: ElementRef, static: true}) button!: ElementRef<any>;
 
-  cardsList: CardTemplateDirective[] = [];
+  @ViewChild('cardContainer', {static: true}) container!: ElementRef<HTMLElement>;
 
-  constructor() { }
+  cardsList: LazyCardDirective[] = [];
+
+  private currentIndex = 0;
+  private dispose!: () => void;
+
+  constructor(private host: ElementRef, private renderer: Renderer2) { }
+
 
   ngOnInit() {
+    // const options = {
+    //   root: this.element
+    // };
+    //
+    // this.observer = new IntersectionObserver(([entry]) => {
+    //   console.log(entry);
+    // }, options);
+    //
+    // this.observer.observe(this.anchor.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.dispose && this.dispose();
   }
 
   ngAfterContentInit(): void {
     this.cardsList = this.cards.toArray();
+
+    // Render cards to fill the viewport
+    this.renderCard(this.cardsList[0].nativeElement);
+    this.renderCard(this.cardsList[1].nativeElement);
+
+    this.currentIndex = 1;
+
     if (this.button) {
-      this.button.nativeElement.addEventListener('click', () => this.scrollUp());
+      this.dispose = this.renderer.listen(this.button.nativeElement, 'click', () => this.scrollUp());
     }
   }
 
-  get hasOffsetToScroll() {
-    return this.viewport && this.viewport.getRenderedRange().start > 0;
+
+  private renderCard(elem: HTMLElement) {
+    this.renderer.appendChild(this.container.nativeElement, elem);
   }
 
+
   private scrollUp() {
-    this.viewport.scrollToIndex(0, 'smooth');
+    this.container.nativeElement.scrollIntoView({behavior: 'smooth'});
+  }
+
+  private hasMore(): boolean {
+    return this.currentIndex < this.cardsList.length;
+  }
+
+  onScroll(event: IInfiniteScrollEvent) {
+
+    if (!this.hasMore()) return;
+
+    const {offsetTop, clientHeight} = this.cardsList[this.currentIndex].nativeElement;
+
+    console.log({offsetTop, clientHeight, scroll: event.currentScrollPosition});
+
+    // if ((offsetTop + clientHeight) <= event.currentScrollPosition) {
+      this.renderCard(this.cardsList[this.currentIndex++].nativeElement);
+    // }
   }
 }
