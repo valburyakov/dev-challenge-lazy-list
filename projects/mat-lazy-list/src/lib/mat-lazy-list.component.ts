@@ -9,7 +9,6 @@ import {
   ViewChild
 } from '@angular/core';
 import { LazyCardDirective } from './lazy-card.directive';
-import { IInfiniteScrollEvent } from 'ngx-infinite-scroll';
 
 @Component({
   selector: 'lib-mat-lazy-list',
@@ -24,51 +23,63 @@ export class MatLazyListComponent implements OnInit, AfterContentInit, OnDestroy
 
   @ViewChild('cardContainer', {static: true}) container!: ElementRef<HTMLElement>;
 
+  @ViewChild('anchor', {static: true}) anchor!: ElementRef<HTMLElement>;
+
   cardsList: LazyCardDirective[] = [];
+  isVisible = true;
 
   private currentIndex = 0;
   private dispose!: () => void;
+  private observer!: IntersectionObserver;
 
   constructor(private host: ElementRef, private renderer: Renderer2) { }
 
 
   ngOnInit() {
-    // const options = {
-    //   root: this.element
-    // };
-    //
-    // this.observer = new IntersectionObserver(([entry]) => {
-    //   console.log(entry);
-    // }, options);
-    //
-    // this.observer.observe(this.anchor.nativeElement);
+
   }
 
   ngOnDestroy(): void {
+    this.observer.disconnect();
     this.dispose && this.dispose();
   }
 
   ngAfterContentInit(): void {
     this.cardsList = this.cards.toArray();
 
-    // Render cards to fill the viewport
-    this.renderCard(this.cardsList[0].nativeElement);
-    this.renderCard(this.cardsList[1].nativeElement);
+    // Render first elements that fits initial view port
+    while (this.hasMore() && this.hasEmptySpace()) {
+      this.renderCard(this.cardsList[this.currentIndex++].nativeElement);
+    }
 
-    this.currentIndex = 1;
+
+    const options = {
+      root: null
+    };
+
+    this.observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        this.onScroll();
+      }
+    }, options);
+
+    this.observer.observe(this.anchor.nativeElement);
 
     if (this.button) {
-      this.dispose = this.renderer.listen(this.button.nativeElement, 'click', () => this.scrollUp());
+      this.dispose = this.renderer.listen(window, 'scroll', () => this.buttonScroll());
     }
   }
 
 
   private renderCard(elem: HTMLElement) {
-    this.renderer.appendChild(this.container.nativeElement, elem);
+    this.renderer.insertBefore(this.container.nativeElement, elem, this.anchor.nativeElement);
   }
 
+  private buttonScroll() {
+    this.isVisible = this.isFirstVisible;
+  }
 
-  private scrollUp() {
+  public scrollUp() {
     this.container.nativeElement.scrollIntoView({behavior: 'smooth'});
   }
 
@@ -76,16 +87,31 @@ export class MatLazyListComponent implements OnInit, AfterContentInit, OnDestroy
     return this.currentIndex < this.cardsList.length;
   }
 
-  onScroll(event: IInfiniteScrollEvent) {
+  private hasEmptySpace() {
+    const totalHeight = this.cardsList
+      .filter(item => item.nativeElement.clientHeight > 0)
+      .reduce((acc, item) => acc + item.nativeElement.clientHeight + item.nativeElement.offsetTop, 0);
 
-    if (!this.hasMore()) return;
+    return totalHeight < window.innerHeight;
+  }
 
-    const {offsetTop, clientHeight} = this.cardsList[this.currentIndex].nativeElement;
+  get isFirstVisible(): boolean {
 
-    console.log({offsetTop, clientHeight, scroll: event.currentScrollPosition});
+    if (!this.cardsList.length) {
+      return false;
+    }
 
-    // if ((offsetTop + clientHeight) <= event.currentScrollPosition) {
+    const { top: elemTop, bottom: elemBottom } = this.cardsList[0].nativeElement.getBoundingClientRect();
+
+    // Only completely visible elements return true:
+    const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
+
+    return isVisible;
+  }
+
+  onScroll() {
+    if (this.hasMore()) {
       this.renderCard(this.cardsList[this.currentIndex++].nativeElement);
-    // }
+     }
   }
 }
