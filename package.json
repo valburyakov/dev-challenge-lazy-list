@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "publish": "ng build mat-lazy-list && cd dist/mat-lazy-list && npm publish"
+    "publish": "ng build mat-lazy-list && cd dist/mat-lazy-list && npm publish",
+    "deploy": "ng deploy --base-href=/dev-challenge-lazy-list/"
   },
   "private": true,
   "dependencies": {
@@ -23,6 +24,7 @@
     "@angular/platform-browser": "~8.2.9",
     "@angular/platform-browser-dynamic": "~8.2.9",
     "@angular/router": "~8.2.9",
+    "angular-cli-ghpages": "^0.6.0",
     "rxjs": "~6.5.3",
     "tslib": "^1.9.0",
     "zone.js": "~0.9.1"
